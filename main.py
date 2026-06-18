@@ -9,6 +9,13 @@ from app.permissions.models import Permission
 from app.permissions.router import (
     router as permission_router
 )
+from app.role_permissions.router import (
+    router as role_permission_router
+)
+from app.role_permissions.models import (
+    RolePermission
+)
+
 Base.metadata.create_all(bind=engine)
 app = FastAPI(
     title="HRMS Backend"
@@ -44,4 +51,9 @@ app.include_router(
     permission_router,
     prefix="/permissions",
     tags=["Permissions"]
+)
+app.include_router(
+    role_permission_router,
+    prefix="/role-permissions",
+    tags=["Role Permissions"]
 )
