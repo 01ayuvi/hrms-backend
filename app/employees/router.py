@@ -7,9 +7,9 @@ from app.auth.dependencies import get_current_user
 from app.employees.models import Employee
 from app.employees.schemas import (
     EmployeeCreate,
-    EmployeeResponse
+    EmployeeResponse,
+    EmployeeUpdate
 )
-
 router = APIRouter()
 
 
@@ -55,3 +55,32 @@ def get_employees(
     employees = db.query(Employee).all()
 
     return employees
+
+@router.put("/{employee_id}")
+def update_employee(
+    employee_id: int,
+    request: EmployeeUpdate,
+    db: Session = Depends(get_db)
+):
+
+    employee = db.query(Employee).filter(
+        Employee.employee_id == employee_id
+    ).first()
+
+    if not employee:
+        raise HTTPException(
+            status_code=404,
+            detail="Employee not found"
+        )
+
+    employee.first_name = request.first_name
+    employee.last_name = request.last_name
+    employee.email = request.email
+    employee.phone = request.phone
+    employee.designation = request.designation
+    employee.status = request.status
+
+    db.commit()
+    db.refresh(employee)
+
+    return employee

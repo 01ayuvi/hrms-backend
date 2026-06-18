@@ -40,3 +40,16 @@ class EmployeeResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class EmployeeUpdate(BaseModel):
+
+    first_name: str
+    last_name: str
+
+    email: EmailStr
+
+    phone: str | None = None
+
+    designation: str | None = None
+
+    status: str
