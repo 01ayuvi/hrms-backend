@@ -8,6 +8,7 @@ from app.roles.models import Role
 
 from app.user_roles.models import UserRole
 from app.user_roles.schemas import UserRoleCreate
+from app.audit.utils import create_audit_log
 
 router = APIRouter()
 
@@ -59,6 +60,13 @@ def assign_role_to_user(
     db.commit()
 
     db.refresh(assignment)
+    create_audit_log(
+    db=db,
+    user_id=1,
+    action="ASSIGN_ROLE",
+    entity_type="UserRole",
+    entity_id=assignment.id
+)
 
     return assignment
 

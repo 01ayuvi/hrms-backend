@@ -13,7 +13,7 @@ from app.role_permissions.models import (
 from app.role_permissions.schemas import (
     RolePermissionCreate
 )
-
+from app.audit.utils import create_audit_log
 router = APIRouter()
 @router.post("/assign")
 def assign_permission_to_role(
@@ -63,6 +63,13 @@ def assign_permission_to_role(
     db.commit()
 
     db.refresh(assignment)
+    create_audit_log(
+    db=db,
+    user_id=1,
+    action="ASSIGN_PERMISSION",
+    entity_type="RolePermission",
+    entity_id=assignment.id
+)
 
     return assignment
 @router.get("/")
