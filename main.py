@@ -17,6 +17,8 @@ from app.role_permissions.models import (
 )
 from app.user_roles.router import router as user_role_router
 from app.user_roles.models import UserRole
+from app.audit.router import router as audit_router
+from app.audit.models import AuditLog
 
 
 Base.metadata.create_all(bind=engine)
@@ -64,4 +66,9 @@ app.include_router(
     user_role_router,
     prefix="/user-roles",
     tags=["User Roles"]
+)
+app.include_router(
+    audit_router,
+    prefix="/audit",
+    tags=["Audit Logs"]
 )

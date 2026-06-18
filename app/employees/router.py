@@ -11,6 +11,7 @@ from app.employees.schemas import (
     EmployeeUpdate
 )
 router = APIRouter()
+from app.audit.utils import create_audit_log
 
 
 @router.post("/")
@@ -43,6 +44,13 @@ def create_employee(
     db.add(employee)
     db.commit()
     db.refresh(employee)
+    create_audit_log(
+    db=db,
+    user_id=1,
+    action="CREATE",
+    entity_type="Employee",
+    entity_id=employee.employee_id
+)
 
     return employee
 
