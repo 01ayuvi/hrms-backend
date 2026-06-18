@@ -1,12 +1,11 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.auth.schemas import RegisterRequest
+from app.auth.schemas import RegisterRequest, LoginRequest
 from app.auth.models import User
-from app.auth.security import hash_password
-from app.auth.schemas import LoginRequest
+from app.auth.security import hash_password, verify_password
 from app.auth.jwt_handler import create_access_token
-from app.auth.security import verify_password
+from app.auth.dependencies import get_current_user
 
 from app.database.dependencies import get_db
 
@@ -18,6 +17,28 @@ def register(
     request: RegisterRequest,
     db: Session = Depends(get_db)
 ):
+
+    # Check existing username
+    existing_user = db.query(User).filter(
+        User.username == request.username
+    ).first()
+
+    if existing_user:
+        raise HTTPException(
+            status_code=400,
+            detail="Username already exists"
+        )
+
+    # Check existing email
+    existing_email = db.query(User).filter(
+        User.email == request.email
+    ).first()
+
+    if existing_email:
+        raise HTTPException(
+            status_code=400,
+            detail="Email already exists"
+        )
 
     hashed_password = hash_password(
         request.password
@@ -31,15 +52,15 @@ def register(
     )
 
     db.add(new_user)
-
     db.commit()
-
     db.refresh(new_user)
 
     return {
         "message": "User registered successfully",
         "user_id": new_user.id
     }
+
+
 @router.post("/login")
 def login(
     request: LoginRequest,
@@ -72,4 +93,17 @@ def login(
     return {
         "access_token": access_token,
         "token_type": "bearer"
+    }
+
+
+@router.get("/me")
+def get_me(
+    current_user=Depends(get_current_user)
+):
+
+    return {
+        "id": current_user.id,
+        "username": current_user.username,
+        "email": current_user.email,
+        "is_active": current_user.is_active
     }
