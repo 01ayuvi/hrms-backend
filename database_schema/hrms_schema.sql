@@ -197,6 +197,24 @@ CREATE TABLE public.permissions (
 
 ALTER TABLE public.permissions OWNER TO postgres;
 
+CREATE TABLE role_permissions (
+    id SERIAL PRIMARY KEY,
+
+    role_id INTEGER NOT NULL,
+
+    permission_id INTEGER NOT NULL,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_role_permission_role
+        FOREIGN KEY (role_id)
+        REFERENCES roles(id),
+
+    CONSTRAINT fk_role_permission_permission
+        FOREIGN KEY (permission_id)
+        REFERENCES permissions(id)
+);
+
 --
 -- Name: permissions_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
