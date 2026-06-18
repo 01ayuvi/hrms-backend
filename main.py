@@ -15,6 +15,9 @@ from app.role_permissions.router import (
 from app.role_permissions.models import (
     RolePermission
 )
+from app.user_roles.router import router as user_role_router
+from app.user_roles.models import UserRole
+
 
 Base.metadata.create_all(bind=engine)
 app = FastAPI(
@@ -56,4 +59,9 @@ app.include_router(
     role_permission_router,
     prefix="/role-permissions",
     tags=["Role Permissions"]
+)
+app.include_router(
+    user_role_router,
+    prefix="/user-roles",
+    tags=["User Roles"]
 )
