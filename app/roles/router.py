@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database.dependencies import get_db
+from app.auth.permissions import require_permission
 
 from app.roles.models import Role
 from app.roles.schemas import (
@@ -10,10 +11,15 @@ from app.roles.schemas import (
 )
 
 router = APIRouter()
+
+
 @router.post("/")
 def create_role(
     request: RoleCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user=Depends(
+        require_permission("manage_roles")
+    )
 ):
 
     existing_role = db.query(Role).filter(
@@ -32,12 +38,12 @@ def create_role(
     )
 
     db.add(role)
-
     db.commit()
-
     db.refresh(role)
 
     return role
+
+
 @router.get("/")
 def get_roles(
     db: Session = Depends(get_db)
@@ -47,11 +53,15 @@ def get_roles(
 
     return roles
 
+
 @router.put("/{role_id}")
 def update_role(
     role_id: int,
     request: RoleUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user=Depends(
+        require_permission("manage_roles")
+    )
 ):
 
     role = db.query(Role).filter(
@@ -68,7 +78,6 @@ def update_role(
     role.description = request.description
 
     db.commit()
-
     db.refresh(role)
 
     return role

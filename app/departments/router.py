@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database.dependencies import get_db
+from app.auth.permissions import require_permission
 
 from app.departments.models import Department
 from app.departments.schemas import (
@@ -11,10 +12,14 @@ from app.departments.schemas import (
 
 router = APIRouter()
 
+
 @router.post("/")
 def create_department(
     request: DepartmentCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user=Depends(
+        require_permission("create_department")
+    )
 ):
 
     department = Department(
@@ -24,12 +29,11 @@ def create_department(
     )
 
     db.add(department)
-
     db.commit()
-
     db.refresh(department)
 
     return department
+
 
 @router.get("/")
 def get_departments(
@@ -41,11 +45,16 @@ def get_departments(
     ).all()
 
     return departments
+
+
 @router.put("/{department_id}")
 def update_department(
     department_id: int,
     request: DepartmentUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user=Depends(
+        require_permission("update_department")
+    )
 ):
 
     department = db.query(
@@ -69,7 +78,6 @@ def update_department(
     )
 
     db.commit()
-
     db.refresh(department)
 
     return department

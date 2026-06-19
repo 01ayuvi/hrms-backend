@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database.dependencies import get_db
+from app.auth.permissions import require_permission
 
 from app.permissions.models import Permission
 from app.permissions.schemas import (
@@ -10,6 +11,8 @@ from app.permissions.schemas import (
 )
 
 router = APIRouter()
+
+
 @router.post("/")
 def create_permission(
     request: PermissionCreate,
@@ -35,9 +38,7 @@ def create_permission(
     )
 
     db.add(permission)
-
     db.commit()
-
     db.refresh(permission)
 
     return permission
@@ -59,7 +60,10 @@ def get_permissions(
 def update_permission(
     permission_id: int,
     request: PermissionUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user=Depends(
+        require_permission("manage_permissions")
+    )
 ):
 
     permission = db.query(
@@ -83,7 +87,6 @@ def update_permission(
     )
 
     db.commit()
-
     db.refresh(permission)
 
     return permission

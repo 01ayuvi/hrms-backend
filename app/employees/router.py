@@ -2,19 +2,17 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database.dependencies import get_db
-from app.auth.dependencies import get_current_user
+from app.auth.permissions import require_permission
 
 from app.employees.models import Employee
 from app.employees.schemas import (
     EmployeeCreate,
-    EmployeeResponse,
     EmployeeUpdate
 )
-router = APIRouter()
+
 from app.audit.utils import create_audit_log
-from app.auth.permissions import (
-    require_permission
-)
+
+router = APIRouter()
 
 
 @router.post("/")
@@ -22,9 +20,7 @@ def create_employee(
     request: EmployeeCreate,
     db: Session = Depends(get_db),
     current_user=Depends(
-        require_permission(
-            "create_employee"
-        )
+        require_permission("create_employee")
     )
 ):
 
@@ -52,18 +48,16 @@ def create_employee(
     db.add(employee)
     db.commit()
     db.refresh(employee)
-   
-    create_audit_log(
-    db=db,
-    user_id=1,
-    action="CREATE",
-    entity_type="Employee",
-    entity_id=employee.employee_id
-)
-    
-    return employee
 
-    
+    create_audit_log(
+        db=db,
+        user_id=current_user.id,
+        action="CREATE",
+        entity_type="Employee",
+        entity_id=employee.employee_id
+    )
+
+    return employee
 
 
 @router.get("/")
@@ -75,11 +69,15 @@ def get_employees(
 
     return employees
 
+
 @router.put("/{employee_id}")
 def update_employee(
     employee_id: int,
     request: EmployeeUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user=Depends(
+        require_permission("update_employee")
+    )
 ):
 
     employee = db.query(Employee).filter(
@@ -101,12 +99,13 @@ def update_employee(
 
     db.commit()
     db.refresh(employee)
+
     create_audit_log(
-    db=db,
-    user_id=1,
-    action="UPDATE",
-    entity_type="Employee",
-    entity_id=employee.employee_id
-)
+        db=db,
+        user_id=current_user.id,
+        action="UPDATE",
+        entity_type="Employee",
+        entity_id=employee.employee_id
+    )
 
     return employee
