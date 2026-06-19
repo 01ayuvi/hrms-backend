@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from app.auth.dependencies import get_current_user
 
 from app.database.dependencies import get_db
 
@@ -16,7 +17,8 @@ router = APIRouter()
 @router.post("/assign")
 def assign_role_to_user(
     request: UserRoleCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
 ):
 
     user = db.query(User).filter(
@@ -62,7 +64,7 @@ def assign_role_to_user(
     db.refresh(assignment)
     create_audit_log(
     db=db,
-    user_id=1,
+    user_id=current_user.id,
     action="ASSIGN_ROLE",
     entity_type="UserRole",
     entity_id=assignment.id
