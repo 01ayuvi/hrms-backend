@@ -107,3 +107,14 @@ def get_me(
         "email": current_user.email,
         "is_active": current_user.is_active
     }
+
+from app.auth.dependencies import get_current_user
+
+@router.get("/whoami")
+def who_am_i(
+    current_user = Depends(get_current_user)
+):
+    return {
+        "id": current_user.id,
+        "username": current_user.username
+    }

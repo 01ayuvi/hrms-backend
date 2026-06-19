@@ -12,12 +12,20 @@ from app.employees.schemas import (
 )
 router = APIRouter()
 from app.audit.utils import create_audit_log
+from app.auth.permissions import (
+    require_permission
+)
 
 
 @router.post("/")
 def create_employee(
     request: EmployeeCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user=Depends(
+        require_permission(
+            "create_employee"
+        )
+    )
 ):
 
     existing_employee = db.query(Employee).filter(
