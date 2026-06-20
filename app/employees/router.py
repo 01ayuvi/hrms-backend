@@ -109,3 +109,38 @@ def update_employee(
     )
 
     return employee
+
+
+@router.patch("/{employee_id}/deactivate")
+def deactivate_employee(
+    employee_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(
+        require_permission("update_employee")
+    )
+):
+
+    employee = db.query(Employee).filter(
+        Employee.employee_id == employee_id
+    ).first()
+
+    if not employee:
+        raise HTTPException(
+            status_code=404,
+            detail="Employee not found"
+        )
+
+    employee.status = "INACTIVE"
+
+    db.commit()
+    db.refresh(employee)
+
+    create_audit_log(
+        db=db,
+        user_id=current_user.id,
+        action="DEACTIVATE",
+        entity_type="Employee",
+        entity_id=employee.employee_id
+    )
+
+    return employee
