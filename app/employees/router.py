@@ -19,7 +19,54 @@ from app.employees.search_schemas import (
     EmployeeSearchRequest,
     EmployeeSearchResponse
 )
+from fastapi.responses import FileResponse
+from openpyxl import Workbook
 
+from app.employees.export_schemas import (
+    EmployeeExportRequest
+)
+from fastapi import BackgroundTasks
+
+def generate_employee_excel(
+    employees,
+    file_name
+):
+
+    workbook = Workbook()
+
+    sheet = workbook.active
+
+    sheet.title = "Employees"
+
+    sheet.append([
+        "Employee ID",
+        "First Name",
+        "Last Name",
+        "Email",
+        "Department ID",
+        "Designation",
+        "Status",
+        "Joining Date",
+        "Created At",
+        "Updated At"
+    ])
+
+    for employee in employees:
+
+        sheet.append([
+            employee.employee_id,
+            employee.first_name,
+            employee.last_name,
+            employee.email,
+            employee.department_id,
+            employee.designation,
+            employee.status,
+            str(employee.joining_date),
+            str(employee.created_at),
+            str(employee.updated_at)
+        ])
+
+    workbook.save(file_name)
 
 @router.post("/")
 def create_employee(
@@ -107,6 +154,24 @@ def search_employees(
             Employee.status ==
             request.status
         )
+    if request.designation:
+        query = query.filter(
+        Employee.designation.ilike(
+            f"%{request.designation}%"
+        )
+    )
+
+    if request.joining_date_from:
+        query = query.filter(
+        Employee.joining_date >=
+        request.joining_date_from
+    )
+
+    if request.joining_date_to:
+        query = query.filter(
+        Employee.joining_date <=
+        request.joining_date_to
+    )
     sort_column = getattr(
     Employee,
     request.sort_by,
@@ -143,6 +208,69 @@ def search_employees(
 
     return {
         "message": "search endpoint working"
+    }
+@router.post("/export")
+def export_employees(
+    request: EmployeeExportRequest,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db)
+):
+
+    query = db.query(Employee)
+
+    if request.employee_name:
+        query = query.filter(
+            Employee.first_name.ilike(
+                f"%{request.employee_name}%"
+            )
+        )
+
+    if request.department_id:
+        query = query.filter(
+            Employee.department_id ==
+            request.department_id
+        )
+
+    if request.status:
+        query = query.filter(
+            Employee.status ==
+            request.status
+        )
+
+    if request.designation:
+        query = query.filter(
+            Employee.designation.ilike(
+                f"%{request.designation}%"
+            )
+        )
+
+    if request.joining_date_from:
+        query = query.filter(
+            Employee.joining_date >=
+            request.joining_date_from
+        )
+
+    if request.joining_date_to:
+        query = query.filter(
+            Employee.joining_date <=
+            request.joining_date_to
+        )
+
+    employees = query.all()
+
+    file_name = (
+        "exports/employees_export.xlsx"
+    )
+
+    background_tasks.add_task(
+        generate_employee_excel,
+        employees,
+        file_name
+    )
+
+    return {
+        "message": "Export started",
+        "file_name": file_name
     }
 
 
