@@ -26,6 +26,8 @@ from app.employees.export_schemas import (
     EmployeeExportRequest
 )
 from fastapi import BackgroundTasks
+from app.export_jobs.models import ExportJob
+from datetime import datetime
 
 def generate_employee_excel(
     employees,
@@ -258,19 +260,35 @@ def export_employees(
 
     employees = query.all()
 
-    file_name = (
-        "exports/employees_export.xlsx"
+    
+    job = ExportJob(
+    report_type="EMPLOYEE",
+    status="PENDING"
     )
 
+    db.add(job)
+    db.commit()
+    db.refresh(job)
+    file_name = (
+    f"exports/employees_export_{job.id}.xlsx"
+    )
     background_tasks.add_task(
         generate_employee_excel,
         employees,
         file_name
     )
+    job.file_name = file_name
+
+    job.status = "COMPLETED"
+
+    job.completed_at = datetime.utcnow()
+
+    db.commit()
 
     return {
-        "message": "Export started",
-        "file_name": file_name
+    "job_id": job.id,
+    "status": job.status,
+    "file_name": file_name
     }
 
 

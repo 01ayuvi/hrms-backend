@@ -25,7 +25,11 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI(
     title="HRMS Backend"
 )
+from app.export_jobs.models import ExportJob
 
+from app.export_jobs.router import (
+    router as export_jobs_router
+)
 
 @app.get("/")
 def root():
@@ -71,4 +75,9 @@ app.include_router(
     audit_router,
     prefix="/audit",
     tags=["Audit Logs"]
+)
+app.include_router(
+    export_jobs_router,
+    prefix="/export-jobs",
+    tags=["Export Jobs"]
 )
