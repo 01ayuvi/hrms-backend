@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.database.dependencies import get_db
 from app.auth.permissions import require_permission
+from sqlalchemy import asc, desc
 
 from app.employees.models import Employee
 from app.employees.schemas import (
@@ -13,6 +14,11 @@ from app.employees.schemas import (
 from app.audit.utils import create_audit_log
 
 router = APIRouter()
+
+from app.employees.search_schemas import (
+    EmployeeSearchRequest,
+    EmployeeSearchResponse
+)
 
 
 @router.post("/")
@@ -62,12 +68,82 @@ def create_employee(
 
 @router.get("/")
 def get_employees(
+    skip: int = 0,
+    limit: int = 10,
     db: Session = Depends(get_db)
 ):
 
-    employees = db.query(Employee).all()
+    employees = (
+        db.query(Employee)
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
 
     return employees
+@router.post("/search")
+def search_employees(
+    request: EmployeeSearchRequest,
+    db: Session = Depends(get_db)
+):
+
+    query = db.query(Employee)
+
+    if request.employee_name:
+        query = query.filter(
+            Employee.first_name.ilike(
+                f"%{request.employee_name}%"
+            )
+        )
+
+    if request.department_id:
+        query = query.filter(
+            Employee.department_id ==
+            request.department_id
+        )
+
+    if request.status:
+        query = query.filter(
+            Employee.status ==
+            request.status
+        )
+    sort_column = getattr(
+    Employee,
+    request.sort_by,
+    Employee.employee_id
+)
+
+    if request.sort_order.lower() == "asc":
+        query = query.order_by(
+        asc(sort_column)
+    )
+    else:
+        query = query.order_by(
+        desc(sort_column)
+    )
+    total_count = query.count()
+
+    offset = (
+        request.page - 1
+    ) * request.page_size
+
+    employees = (
+        query
+        .offset(offset)
+        .limit(request.page_size)
+        .all()
+    )
+
+    return {
+        "count": total_count,
+        "page": request.page,
+        "page_size": request.page_size,
+        "records": employees
+    }
+
+    return {
+        "message": "search endpoint working"
+    }
 
 
 @router.put("/{employee_id}")
