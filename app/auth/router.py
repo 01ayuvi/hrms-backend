@@ -8,7 +8,12 @@ from app.auth.security import hash_password, verify_password
 from app.auth.jwt_handler import (
     create_access_token,
     create_refresh_token,
+    create_reset_token,
     verify_token
+)
+from app.auth.password_schemas import (
+    ForgotPasswordRequest,
+    ResetPasswordRequest
 )
 
 from app.auth.dependencies import get_current_user
@@ -136,6 +141,74 @@ def refresh_access_token(
     return {
         "access_token": new_access_token,
         "token_type": "bearer"
+    }
+@router.post("/forgot-password")
+def forgot_password(
+    request: ForgotPasswordRequest,
+    db: Session = Depends(get_db)
+):
+
+    user = db.query(User).filter(
+        User.email == request.email
+    ).first()
+
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found"
+        )
+
+    reset_token = create_reset_token(
+        {"sub": user.username}
+    )
+
+    return {
+        "message": "Password reset token generated",
+        "reset_token": reset_token
+    }
+
+@router.post("/reset-password")
+def reset_password(
+    request: ResetPasswordRequest,
+    db: Session = Depends(get_db)
+):
+
+    username = verify_token(
+        request.token
+    )
+
+    if not username:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid or expired token"
+        )
+
+    user = db.query(User).filter(
+        User.username == username
+    ).first()
+
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found"
+        )
+
+    user.password_hash = hash_password(
+        request.new_password
+    )
+
+    db.commit()
+
+    create_audit_log(
+        db=db,
+        user_id=user.id,
+        action="PASSWORD_RESET",
+        entity_type="Authentication",
+        entity_id=user.id
+    )
+
+    return {
+        "message": "Password reset successful"
     }
 
 
