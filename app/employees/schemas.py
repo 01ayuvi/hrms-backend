@@ -38,6 +38,8 @@ class EmployeeResponse(BaseModel):
 
     status: str
 
+    manager_id: int | None = None
+
     class Config:
         from_attributes = True
 
@@ -53,3 +55,5 @@ class EmployeeUpdate(BaseModel):
     designation: str | None = None
 
     status: str
+
+    manager_id: int | None = None

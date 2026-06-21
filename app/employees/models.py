@@ -56,6 +56,11 @@ class Employee(Base):
         default="ACTIVE"
     )
 
+    manager_id = Column(
+    Integer,
+    nullable=True
+    )
+
     created_at = Column(
         DateTime,
         server_default=func.now()

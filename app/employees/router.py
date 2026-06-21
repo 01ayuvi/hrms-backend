@@ -318,6 +318,7 @@ def update_employee(
     employee.phone = request.phone
     employee.designation = request.designation
     employee.status = request.status
+    employee.manager_id = request.manager_id
 
     db.commit()
     db.refresh(employee)
@@ -366,3 +367,38 @@ def deactivate_employee(
     )
 
     return employee
+
+@router.get("/{employee_id}/manager")
+def get_employee_manager(
+    employee_id: int,
+    db: Session = Depends(get_db)
+):
+
+    employee = db.query(Employee).filter(
+        Employee.employee_id == employee_id
+    ).first()
+
+    if not employee:
+        raise HTTPException(
+            status_code=404,
+            detail="Employee not found"
+        )
+
+    if not employee.manager_id:
+        return {
+            "message": "No manager assigned"
+        }
+
+    manager = db.query(Employee).filter(
+        Employee.employee_id ==
+        employee.manager_id
+    ).first()
+
+    return {
+    "employee_id": manager.employee_id,
+    "first_name": manager.first_name,
+    "last_name": manager.last_name,
+    "email": manager.email,
+    "designation": manager.designation,
+    "status": manager.status
+}
