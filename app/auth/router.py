@@ -2,11 +2,13 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm
 
-from app.auth.schemas import RegisterRequest, LoginRequest
+from app.auth.schemas import RegisterRequest
 from app.auth.models import User
 from app.auth.security import hash_password, verify_password
 from app.auth.jwt_handler import create_access_token
 from app.auth.dependencies import get_current_user
+
+from app.audit.utils import create_audit_log
 
 from app.database.dependencies import get_db
 
@@ -19,7 +21,6 @@ def register(
     db: Session = Depends(get_db)
 ):
 
-    # Check existing username
     existing_user = db.query(User).filter(
         User.username == request.username
     ).first()
@@ -30,7 +31,6 @@ def register(
             detail="Username already exists"
         )
 
-    # Check existing email
     existing_email = db.query(User).filter(
         User.email == request.email
     ).first()
@@ -91,6 +91,14 @@ def login(
         {"sub": user.username}
     )
 
+    create_audit_log(
+        db=db,
+        user_id=user.id,
+        action="LOGIN",
+        entity_type="Authentication",
+        entity_id=user.id
+    )
+
     return {
         "access_token": access_token,
         "token_type": "bearer"
@@ -109,12 +117,12 @@ def get_me(
         "is_active": current_user.is_active
     }
 
-from app.auth.dependencies import get_current_user
 
 @router.get("/whoami")
 def who_am_i(
-    current_user = Depends(get_current_user)
+    current_user=Depends(get_current_user)
 ):
+
     return {
         "id": current_user.id,
         "username": current_user.username
