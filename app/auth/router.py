@@ -5,7 +5,12 @@ from fastapi.security import OAuth2PasswordRequestForm
 from app.auth.schemas import RegisterRequest
 from app.auth.models import User
 from app.auth.security import hash_password, verify_password
-from app.auth.jwt_handler import create_access_token
+from app.auth.jwt_handler import (
+    create_access_token,
+    create_refresh_token,
+    verify_token
+)
+
 from app.auth.dependencies import get_current_user
 
 from app.audit.utils import create_audit_log
@@ -91,6 +96,10 @@ def login(
         {"sub": user.username}
     )
 
+    refresh_token = create_refresh_token(
+        {"sub": user.username}
+    )
+
     create_audit_log(
         db=db,
         user_id=user.id,
@@ -101,6 +110,31 @@ def login(
 
     return {
         "access_token": access_token,
+        "refresh_token": refresh_token,
+        "token_type": "bearer"
+    }
+
+@router.post("/refresh")
+def refresh_access_token(
+    refresh_token: str
+):
+
+    username = verify_token(
+        refresh_token
+    )
+
+    if not username:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid refresh token"
+        )
+
+    new_access_token = create_access_token(
+        {"sub": username}
+    )
+
+    return {
+        "access_token": new_access_token,
         "token_type": "bearer"
     }
 
