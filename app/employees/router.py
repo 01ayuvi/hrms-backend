@@ -549,3 +549,52 @@ def download_document(
         filename=document.document_name,
         media_type="application/octet-stream"
     )
+
+@router.delete("/documents/{document_id}")
+def delete_document(
+    document_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(
+        require_permission("update_employee")
+    )
+):
+
+    document = db.query(
+        EmployeeDocument
+    ).filter(
+        EmployeeDocument.id == document_id
+    ).first()
+
+    if not document:
+        raise HTTPException(
+            status_code=404,
+            detail="Document not found"
+        )
+    print("FILE PATH:", document.file_path)
+    print("EXISTS:", os.path.exists(document.file_path))
+    # delete physical file
+    absolute_path = os.path.abspath(
+    document.file_path
+    )
+
+    print("DELETE PATH:", absolute_path)
+    print("EXISTS:", os.path.exists(absolute_path))
+
+    if os.path.exists(absolute_path):
+        os.remove(absolute_path)
+
+    create_audit_log(
+        db=db,
+        user_id=current_user.id,
+        action="DELETE_DOCUMENT",
+        entity_type="EmployeeDocument",
+        entity_id=document.id
+    )
+
+    db.delete(document)
+
+    db.commit()
+
+    return {
+        "message": "Document deleted successfully"
+    }
