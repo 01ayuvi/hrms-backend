@@ -572,6 +572,110 @@ ALTER TABLE ONLY public.user_roles
     ADD CONSTRAINT fk_userrole_user FOREIGN KEY (user_id) REFERENCES public.users(id);
 
 
+CREATE TABLE public.attendance (
+    attendance_id SERIAL PRIMARY KEY,
+
+    employee_id INTEGER NOT NULL,
+
+    attendance_date DATE NOT NULL,
+
+    check_in_time TIMESTAMP,
+    check_out_time TIMESTAMP,
+
+    working_hours DECIMAL(5,2),
+
+    attendance_status VARCHAR(20) DEFAULT 'PRESENT',
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_attendance_employee
+        FOREIGN KEY (employee_id)
+        REFERENCES public.employees(employee_id),
+
+    CONSTRAINT uq_attendance_employee_date
+        UNIQUE (employee_id, attendance_date)
+);
+
+
+CREATE TABLE public.leave_requests (
+    leave_id SERIAL PRIMARY KEY,
+
+    employee_id INTEGER NOT NULL,
+
+    leave_type VARCHAR(50) NOT NULL,
+
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+
+    total_days INTEGER,
+
+    reason TEXT,
+
+    status VARCHAR(20) DEFAULT 'PENDING',
+
+    approved_by INTEGER,
+
+    approved_at TIMESTAMP,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_leave_employee
+        FOREIGN KEY (employee_id)
+        REFERENCES public.employees(employee_id),
+
+    CONSTRAINT fk_leave_approver
+        FOREIGN KEY (approved_by)
+        REFERENCES public.users(id),
+
+    CONSTRAINT chk_leave_dates
+        CHECK (end_date >= start_date)
+);
+
+CREATE TABLE public.payroll_runs (
+    payroll_run_id SERIAL PRIMARY KEY,
+
+    pay_period VARCHAR(20) NOT NULL,
+
+    run_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    status VARCHAR(20) DEFAULT 'COMPLETED',
+
+    remarks TEXT,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE public.payroll_details (
+    payroll_detail_id SERIAL PRIMARY KEY,
+
+    payroll_run_id INTEGER NOT NULL,
+
+    employee_id INTEGER NOT NULL,
+
+    basic_salary DECIMAL(12,2) NOT NULL DEFAULT 0,
+
+    allowances DECIMAL(12,2) DEFAULT 0,
+
+    deductions DECIMAL(12,2) DEFAULT 0,
+
+    net_salary DECIMAL(12,2) NOT NULL DEFAULT 0,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_payroll_run
+        FOREIGN KEY (payroll_run_id)
+        REFERENCES public.payroll_runs(payroll_run_id),
+
+    CONSTRAINT fk_payroll_employee
+        FOREIGN KEY (employee_id)
+        REFERENCES public.employees(employee_id)
+);
+
+
 --
 -- PostgreSQL database dump complete
 --
