@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+import os
+import shutil
 
 from app.database.dependencies import get_db
 from app.auth.permissions import require_permission
@@ -28,6 +30,10 @@ from app.employees.export_schemas import (
 from fastapi import BackgroundTasks
 from app.export_jobs.models import ExportJob
 from datetime import datetime
+from fastapi import UploadFile
+from fastapi import File
+from fastapi import Form
+from app.models.employee_document import EmployeeDocument
 
 def generate_employee_excel(
     employees,

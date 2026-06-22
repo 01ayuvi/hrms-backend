@@ -2,10 +2,10 @@ from sqlalchemy import Column
 from sqlalchemy import Integer
 from sqlalchemy import String
 from sqlalchemy import Text
-from sqlalchemy import ForeignKey
 from sqlalchemy import DateTime
+from sqlalchemy import ForeignKey
 
-from datetime import datetime
+from sqlalchemy.sql import func
 
 from app.database.database import Base
 
@@ -13,11 +13,15 @@ from app.database.database import Base
 class EmployeeDocument(Base):
     __tablename__ = "employee_documents"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(
+        Integer,
+        primary_key=True,
+        index=True
+    )
 
     employee_id = Column(
         Integer,
-        ForeignKey("employees.id", ondelete="CASCADE"),
+        ForeignKey("employees.employee_id"),
         nullable=False
     )
 
@@ -38,15 +42,16 @@ class EmployeeDocument(Base):
 
     uploaded_by = Column(
         Integer,
-        ForeignKey("users.id")
+        ForeignKey("users.id"),
+        nullable=True
     )
 
     uploaded_at = Column(
         DateTime,
-        default=datetime.utcnow
+        server_default=func.now()
     )
 
     created_at = Column(
         DateTime,
-        default=datetime.utcnow
+        server_default=func.now()
     )
