@@ -1,55 +1,71 @@
 from fastapi import FastAPI
+
 from app.auth.router import router as auth_router
 from app.database.database import Base, engine
+
 from app.employees.router import router as employee_router
 from app.departments.router import router as department_router
+
 from app.roles.router import router as role_router
 from app.roles.models import Role
+
 from app.permissions.models import Permission
 from app.permissions.router import (
     router as permission_router
 )
+
 from app.role_permissions.router import (
     router as role_permission_router
 )
 from app.role_permissions.models import (
     RolePermission
 )
+
 from app.user_roles.router import router as user_role_router
 from app.user_roles.models import UserRole
+
 from app.audit.router import router as audit_router
 from app.audit.models import AuditLog
+
 from app.dashboard.router import router as dashboard_router
-
-Base.metadata.create_all(bind=engine)
-app = FastAPI(
-    title="HRMS Backend"
-)
+from app.performance.models import PerformanceReview
 from app.export_jobs.models import ExportJob
-
 from app.export_jobs.router import (
     router as export_jobs_router
 )
 
+from app.performance.router import (
+    router as performance_router
+)
+from app.recruitment.router import router as recruitment_router
+Base.metadata.create_all(bind=engine)
+
+app = FastAPI(
+    title="HRMS Backend"
+)
 @app.get("/")
 def root():
-    return {"message": "HRMS Backend Running"}
-
+    return {
+        "message": "HRMS Backend Running"
+    }
 app.include_router(
     auth_router,
     prefix="/auth",
     tags=["Authentication"]
 )
+
 app.include_router(
     employee_router,
     prefix="/employees",
     tags=["Employees"]
 )
+
 app.include_router(
     department_router,
     prefix="/departments",
     tags=["Departments"]
 )
+
 app.include_router(
     role_router,
     prefix="/roles",
@@ -61,28 +77,44 @@ app.include_router(
     prefix="/permissions",
     tags=["Permissions"]
 )
+
 app.include_router(
     role_permission_router,
     prefix="/role-permissions",
     tags=["Role Permissions"]
 )
+
 app.include_router(
     user_role_router,
     prefix="/user-roles",
     tags=["User Roles"]
 )
+
 app.include_router(
     audit_router,
     prefix="/audit",
     tags=["Audit Logs"]
 )
+
 app.include_router(
     export_jobs_router,
     prefix="/export-jobs",
     tags=["Export Jobs"]
 )
+
 app.include_router(
     dashboard_router,
     prefix="/dashboard",
     tags=["Dashboard"]
+)
+
+app.include_router(
+    recruitment_router,
+    prefix="/recruitment",
+    tags=["Recruitment"]
+)
+app.include_router(
+    performance_router,
+    prefix="/performance",
+    tags=["Performance"]
 )

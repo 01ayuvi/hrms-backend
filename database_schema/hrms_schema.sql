@@ -743,6 +743,136 @@ ON audit_logs(timestamp);
 
 CREATE INDEX IF NOT EXISTS idx_export_status
 ON export_jobs(status);
+
+-- ==========================================
+-- PHASE 13 - RECRUITMENT
+-- ==========================================
+
+CREATE TABLE IF NOT EXISTS job_openings (
+
+```
+job_id SERIAL PRIMARY KEY,
+
+title VARCHAR(255) NOT NULL,
+
+department_id INTEGER NOT NULL,
+
+description TEXT,
+
+openings_count INTEGER NOT NULL DEFAULT 1,
+
+status VARCHAR(20) NOT NULL DEFAULT 'OPEN',
+
+created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+CONSTRAINT fk_job_openings_department
+    FOREIGN KEY (department_id)
+    REFERENCES departments(id)
+```
+
+);
+
+CREATE INDEX IF NOT EXISTS idx_job_openings_department
+ON job_openings(department_id);
+
+-- ==========================================
+-- CANDIDATES
+-- ==========================================
+
+CREATE TABLE IF NOT EXISTS candidates (
+
+```
+candidate_id SERIAL PRIMARY KEY,
+
+job_id INTEGER NOT NULL,
+
+first_name VARCHAR(100) NOT NULL,
+
+last_name VARCHAR(100) NOT NULL,
+
+email VARCHAR(255) NOT NULL,
+
+phone VARCHAR(30),
+
+resume_path VARCHAR(500),
+
+status VARCHAR(30)
+    NOT NULL
+    DEFAULT 'APPLIED',
+
+created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+CONSTRAINT fk_candidate_job
+    FOREIGN KEY (job_id)
+    REFERENCES job_openings(job_id)
+```
+
+);
+
+CREATE INDEX IF NOT EXISTS idx_candidates_job
+ON candidates(job_id);
+
+CREATE INDEX IF NOT EXISTS idx_candidates_email
+ON candidates(email);
+
+CREATE INDEX IF NOT EXISTS idx_candidates_status
+ON candidates(status);
+
+-- ==========================================
+-- PHASE 13 - PERFORMANCE MANAGEMENT
+-- ==========================================
+
+CREATE TABLE IF NOT EXISTS performance_reviews (
+
+```
+review_id SERIAL PRIMARY KEY,
+
+employee_id INTEGER NOT NULL,
+
+reviewer_id INTEGER NOT NULL,
+
+review_period VARCHAR(100) NOT NULL,
+
+rating INTEGER NOT NULL,
+
+strengths TEXT,
+
+improvements TEXT,
+
+goals TEXT,
+
+status VARCHAR(20)
+    NOT NULL
+    DEFAULT 'DRAFT',
+
+created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+CONSTRAINT fk_review_employee
+    FOREIGN KEY (employee_id)
+    REFERENCES employees(employee_id),
+
+CONSTRAINT fk_review_reviewer
+    FOREIGN KEY (reviewer_id)
+    REFERENCES users(id)
+```
+
+);
+
+CREATE INDEX IF NOT EXISTS idx_review_employee
+ON performance_reviews(employee_id);
+
+CREATE INDEX IF NOT EXISTS idx_review_reviewer
+ON performance_reviews(reviewer_id);
+
+CREATE INDEX IF NOT EXISTS idx_review_status
+ON performance_reviews(status);
+
 --
 -- PostgreSQL database dump complete
 --
