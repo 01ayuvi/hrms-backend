@@ -1,6 +1,9 @@
 from app.payroll.salary_structure_model import SalaryStructure
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from fastapi.responses import FileResponse
+
+from app.payroll.payslip_generator import generate_payslip
 from app.leave.models import LeaveRequest
 from app.database.database import get_db
 from app.payroll.models import PayrollRun, PayrollDetail
@@ -148,3 +151,32 @@ def get_payroll_details(
     db: Session = Depends(get_db)
 ):
     return db.query(PayrollDetail).all()
+
+@router.get("/payslip/{payroll_detail_id}")
+def download_payslip(
+    payroll_detail_id: int,
+    db: Session = Depends(get_db)
+):
+
+    payroll = db.query(PayrollDetail).filter(
+        PayrollDetail.payroll_detail_id == payroll_detail_id
+    ).first()
+
+    if not payroll:
+        raise HTTPException(
+            status_code=404,
+            detail="Payroll detail not found"
+        )
+
+    filename = f"payslip_{payroll_detail_id}.pdf"
+
+    generate_payslip(
+        filename,
+        payroll
+    )
+
+    return FileResponse(
+        path=filename,
+        media_type="application/pdf",
+        filename=filename
+    )
