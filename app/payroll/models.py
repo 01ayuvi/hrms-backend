@@ -75,6 +75,15 @@ class PayrollDetail(Base):
         DECIMAL(12, 2),
         nullable=False
     )
+    hra = Column(
+        DECIMAL(12, 2),
+        default=0
+    )
+
+    gross_salary = Column(
+        DECIMAL(12, 2),
+        default=0
+    )
 
     allowances = Column(
         DECIMAL(12, 2),
@@ -85,6 +94,30 @@ class PayrollDetail(Base):
         DECIMAL(12, 2),
         default=0
     )
+    pf_deduction = Column(
+        DECIMAL(12, 2),
+        default=0
+    )
+
+    esic_deduction = Column(
+        DECIMAL(12, 2),
+        default=0
+    )
+
+    professional_tax = Column(
+        DECIMAL(12, 2),
+        default=0
+    )
+
+    tds = Column(
+        DECIMAL(12, 2),
+        default=0
+    )
+
+    lwp_deduction = Column(
+        DECIMAL(12, 2),
+        default=0
+    )   
 
     net_salary = Column(
         DECIMAL(12, 2),

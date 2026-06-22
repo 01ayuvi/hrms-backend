@@ -31,12 +31,27 @@ class PayrollDetailCreate(BaseModel):
 
 class PayrollDetailResponse(BaseModel):
     payroll_detail_id: int
+
     payroll_run_id: int
     employee_id: int
+
     basic_salary: Decimal
+
+    hra: Decimal
+    gross_salary: Decimal
+
     allowances: Decimal
     deductions: Decimal
+
+    pf_deduction: Decimal
+    esic_deduction: Decimal
+    professional_tax: Decimal
+    tds: Decimal
+
+    lwp_deduction: Decimal
+
     net_salary: Decimal
+
     created_at: datetime
     updated_at: datetime
 

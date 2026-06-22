@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends
+from app.payroll.salary_structure_model import SalaryStructure
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.leave.models import LeaveRequest
 from app.database.database import get_db
@@ -39,6 +40,44 @@ def create_payroll_detail(
     payroll_data: PayrollDetailCreate,
     db: Session = Depends(get_db)
 ):
+
+    salary_structure = db.query(SalaryStructure).filter(
+        SalaryStructure.employee_id == payroll_data.employee_id
+    ).first()
+
+    if not salary_structure:
+        raise HTTPException(
+            status_code=404,
+            detail="Salary structure not found"
+        )
+
+    basic_salary = float(salary_structure.basic_salary)
+
+    hra = (
+        basic_salary *
+        float(salary_structure.hra_percentage)
+    ) / 100
+
+    gross_salary = basic_salary + hra
+
+    pf_deduction = (
+        basic_salary *
+        float(salary_structure.pf_percentage)
+    ) / 100
+
+    esic_deduction = (
+        basic_salary *
+        float(salary_structure.esic_percentage)
+    ) / 100
+
+    professional_tax = float(
+        salary_structure.professional_tax
+    )
+
+    tds = float(
+        salary_structure.tds
+    )
+
     lwp_days = 0
 
     approved_leaves = db.query(LeaveRequest).filter(
@@ -49,27 +88,44 @@ def create_payroll_detail(
     for leave in approved_leaves:
         lwp_days += leave.lwp_days
 
-    per_day_salary = payroll_data.basic_salary / 30
+    per_day_salary = basic_salary / 30
 
-    lwp_deduction = per_day_salary * lwp_days
+    lwp_deduction = (
+        per_day_salary * lwp_days
+    )
 
     total_deductions = (
-        payroll_data.deductions +
+        pf_deduction +
+        esic_deduction +
+        professional_tax +
+        tds +
         lwp_deduction
     )
 
     net_salary = (
-        payroll_data.basic_salary +
-        payroll_data.allowances -
+        gross_salary -
         total_deductions
     )
 
     payroll_detail = PayrollDetail(
         payroll_run_id=payroll_data.payroll_run_id,
         employee_id=payroll_data.employee_id,
-        basic_salary=payroll_data.basic_salary,
-        allowances=payroll_data.allowances,
-        deductions=payroll_data.deductions,
+
+        basic_salary=basic_salary,
+
+        hra=hra,
+        gross_salary=gross_salary,
+
+        allowances=0,
+        deductions=total_deductions,
+
+        pf_deduction=pf_deduction,
+        esic_deduction=esic_deduction,
+        professional_tax=professional_tax,
+        tds=tds,
+
+        lwp_deduction=lwp_deduction,
+
         net_salary=net_salary
     )
 

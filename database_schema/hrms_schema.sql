@@ -664,6 +664,20 @@ CREATE TABLE public.payroll_details (
 
     net_salary DECIMAL(12,2) NOT NULL DEFAULT 0,
 
+    hra DECIMAL(12,2) DEFAULT 0,
+
+    gross_salary DECIMAL(12,2) DEFAULT 0,
+
+    pf_deduction DECIMAL(12,2) DEFAULT 0,
+
+    esic_deduction DECIMAL(12,2) DEFAULT 0,
+
+    professional_tax DECIMAL(12,2) DEFAULT 0,
+
+    tds DECIMAL(12,2) DEFAULT 0,
+
+    lwp_deduction DECIMAL(12,2) DEFAULT 0,
+
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
