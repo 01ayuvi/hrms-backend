@@ -2,20 +2,19 @@ from sqlalchemy import (
     Column,
     Integer,
     String,
-    Date,
     DateTime,
-    ForeignKey,
-    Text
+    ForeignKey
 )
+
 from sqlalchemy.sql import func
 
 from app.database.database import Base
 
 
-class LeaveRequest(Base):
-    __tablename__ = "leave_requests"
+class LeaveBalance(Base):
+    __tablename__ = "leave_balances"
 
-    leave_id = Column(
+    leave_balance_id = Column(
         Integer,
         primary_key=True,
         index=True
@@ -32,32 +31,19 @@ class LeaveRequest(Base):
         nullable=False
     )
 
-    start_date = Column(
-        Date,
-        nullable=False
-    )
-
-    end_date = Column(
-        Date,
-        nullable=False
-    )
-
-    reason = Column(
-        Text
-    )
-
-    status = Column(
-        String(20),
-        default="PENDING"
-    )
-
-    approved_by = Column(
+    total_leaves = Column(
         Integer,
-        nullable=True
+        default=12
     )
-    lwp_days = Column(
+
+    used_leaves = Column(
         Integer,
         default=0
+    )
+
+    remaining_leaves = Column(
+        Integer,
+        default=12
     )
 
     created_at = Column(

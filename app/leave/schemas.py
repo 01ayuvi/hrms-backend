@@ -24,6 +24,7 @@ class LeaveResponse(BaseModel):
     reason: str
     status: str
     approved_by: int | None = None
+    lwp_days: int
 
     created_at: datetime
     updated_at: datetime

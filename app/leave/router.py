@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from datetime import timedelta
 
+from app.leave.leave_balance_model import LeaveBalance
 from app.database.database import get_db
 from app.leave.models import LeaveRequest
 from app.leave.schemas import (
@@ -53,6 +55,33 @@ def approve_leave(
 
     leave_request.status = "APPROVED"
     leave_request.approved_by = approval_data.approved_by
+
+    leave_days = (
+        leave_request.end_date -
+        leave_request.start_date
+    ).days + 1
+
+    leave_balance = db.query(LeaveBalance).filter(
+        LeaveBalance.employee_id == leave_request.employee_id,
+        LeaveBalance.leave_type == leave_request.leave_type
+    ).first()
+
+    if leave_balance:
+
+        available_leaves = leave_balance.remaining_leaves
+
+        if leave_days <= available_leaves:
+            leave_balance.used_leaves += leave_days
+            leave_balance.remaining_leaves -= leave_days
+            leave_request.lwp_days = 0
+
+        else:
+            leave_balance.used_leaves += available_leaves
+            leave_balance.remaining_leaves = 0
+
+            leave_request.lwp_days = (
+                leave_days - available_leaves
+            )
 
     db.commit()
     db.refresh(leave_request)

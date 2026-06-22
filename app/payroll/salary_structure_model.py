@@ -1,21 +1,19 @@
 from sqlalchemy import (
     Column,
     Integer,
-    String,
-    Date,
     DateTime,
     ForeignKey,
-    Text
+    DECIMAL
 )
 from sqlalchemy.sql import func
 
 from app.database.database import Base
 
 
-class LeaveRequest(Base):
-    __tablename__ = "leave_requests"
+class SalaryStructure(Base):
+    __tablename__ = "salary_structures"
 
-    leave_id = Column(
+    salary_structure_id = Column(
         Integer,
         primary_key=True,
         index=True
@@ -24,39 +22,37 @@ class LeaveRequest(Base):
     employee_id = Column(
         Integer,
         ForeignKey("employees.employee_id"),
+        unique=True,
         nullable=False
     )
 
-    leave_type = Column(
-        String(50),
+    basic_salary = Column(
+        DECIMAL(12, 2),
         nullable=False
     )
 
-    start_date = Column(
-        Date,
-        nullable=False
+    hra_percentage = Column(
+        DECIMAL(5, 2),
+        default=40
     )
 
-    end_date = Column(
-        Date,
-        nullable=False
+    pf_percentage = Column(
+        DECIMAL(5, 2),
+        default=12
     )
 
-    reason = Column(
-        Text
+    esic_percentage = Column(
+        DECIMAL(5, 2),
+        default=0.75
     )
 
-    status = Column(
-        String(20),
-        default="PENDING"
+    professional_tax = Column(
+        DECIMAL(12, 2),
+        default=200
     )
 
-    approved_by = Column(
-        Integer,
-        nullable=True
-    )
-    lwp_days = Column(
-        Integer,
+    tds = Column(
+        DECIMAL(12, 2),
         default=0
     )
 

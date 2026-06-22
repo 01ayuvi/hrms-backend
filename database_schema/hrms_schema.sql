@@ -615,6 +615,7 @@ CREATE TABLE public.leave_requests (
     status VARCHAR(20) DEFAULT 'PENDING',
 
     approved_by INTEGER,
+    lwp_days INTEGER DEFAULT 0,
 
     approved_at TIMESTAMP,
 
@@ -675,6 +676,27 @@ CREATE TABLE public.payroll_details (
         REFERENCES public.employees(employee_id)
 );
 
+CREATE TABLE leave_balances (
+    leave_balance_id SERIAL PRIMARY KEY,
+
+    employee_id INTEGER NOT NULL,
+
+    leave_type VARCHAR(50) NOT NULL,
+
+    total_leaves INTEGER NOT NULL DEFAULT 12,
+
+    used_leaves INTEGER NOT NULL DEFAULT 0,
+
+    remaining_leaves INTEGER NOT NULL DEFAULT 12,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_leave_balance_employee
+        FOREIGN KEY (employee_id)
+        REFERENCES employees(employee_id)
+);
 
 --
 -- PostgreSQL database dump complete
