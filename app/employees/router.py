@@ -41,6 +41,7 @@ from fastapi import UploadFile
 from fastapi import File
 from fastapi import Form
 from app.models.employee_document import EmployeeDocument
+from app.models.employee_document import EmployeeDocument
 
 def generate_employee_excel(
     employees,
@@ -597,4 +598,63 @@ def delete_document(
 
     return {
         "message": "Document deleted successfully"
+    }
+@router.get("/{employee_id}/profile")
+def employee_profile(
+    employee_id: int,
+    db: Session = Depends(get_db)
+):
+
+    employee = db.query(Employee).filter(
+        Employee.employee_id == employee_id
+    ).first()
+
+    if not employee:
+        raise HTTPException(
+            status_code=404,
+            detail="Employee not found"
+        )
+
+    manager = None
+
+    if employee.manager_id:
+        manager = db.query(Employee).filter(
+            Employee.employee_id == employee.manager_id
+        ).first()
+
+    documents = db.query(
+        EmployeeDocument
+    ).filter(
+        EmployeeDocument.employee_id == employee_id
+    ).all()
+
+    return {
+
+        "employee": {
+            "employee_id": employee.employee_id,
+            "first_name": employee.first_name,
+            "last_name": employee.last_name,
+            "email": employee.email,
+            "designation": employee.designation,
+            "status": employee.status
+        },
+
+        "manager": (
+            {
+                "employee_id": manager.employee_id,
+                "first_name": manager.first_name,
+                "last_name": manager.last_name
+            }
+            if manager
+            else None
+        ),
+
+        "documents": [
+            {
+                "id": doc.id,
+                "document_name": doc.document_name,
+                "document_type": doc.document_type
+            }
+            for doc in documents
+        ]
     }

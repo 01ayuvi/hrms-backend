@@ -19,7 +19,7 @@ from app.user_roles.router import router as user_role_router
 from app.user_roles.models import UserRole
 from app.audit.router import router as audit_router
 from app.audit.models import AuditLog
-
+from app.dashboard.router import router as dashboard_router
 
 Base.metadata.create_all(bind=engine)
 app = FastAPI(
@@ -80,4 +80,9 @@ app.include_router(
     export_jobs_router,
     prefix="/export-jobs",
     tags=["Export Jobs"]
+)
+app.include_router(
+    dashboard_router,
+    prefix="/dashboard",
+    tags=["Dashboard"]
 )
