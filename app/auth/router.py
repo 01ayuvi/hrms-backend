@@ -234,3 +234,21 @@ def who_am_i(
         "id": current_user.id,
         "username": current_user.username
     }
+
+@router.post("/logout")
+def logout(
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+
+    create_audit_log(
+        db=db,
+        user_id=current_user.id,
+        action="LOGOUT",
+        entity_type="Authentication",
+        entity_id=current_user.id
+    )
+
+    return {
+        "message": "Logout successful"
+    }
