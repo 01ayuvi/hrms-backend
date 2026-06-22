@@ -9,7 +9,6 @@ from sqlalchemy.sql import func
 
 from app.database.database import Base
 
-
 class EmployeeDocument(Base):
     __tablename__ = "employee_documents"
 

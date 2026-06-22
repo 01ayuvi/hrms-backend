@@ -16,6 +16,12 @@ from app.employees.schemas import (
 from app.audit.utils import create_audit_log
 
 router = APIRouter()
+UPLOAD_DIR = "uploads/employee_documents"
+
+os.makedirs(
+    UPLOAD_DIR,
+    exist_ok=True
+)
 
 from app.employees.search_schemas import (
     EmployeeSearchRequest,
@@ -408,3 +414,56 @@ def get_employee_manager(
     "designation": manager.designation,
     "status": manager.status
 }
+@router.post("/{employee_id}/documents")
+def upload_document(
+    employee_id: int,
+    document_type: str = Form(...),
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user=Depends(
+    require_permission("update_employee")
+)
+):
+
+    file_name = f"{employee_id}_{file.filename}"
+
+    file_path = os.path.join(
+        UPLOAD_DIR,
+        file_name
+    )
+
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(
+            file.file,
+            buffer
+        )
+
+    # -----------------------------
+    # INSERT INTO employee_documents
+    # -----------------------------
+
+    document = EmployeeDocument(
+        employee_id=employee_id,
+        document_name=file.filename,
+        document_type=document_type,
+        file_path=file_path,
+        uploaded_by=current_user.id
+    )
+
+    db.add(document)
+
+    db.commit()
+
+    db.refresh(document)
+
+    # -----------------------------
+    # RESPONSE
+    # -----------------------------
+
+    return {
+        "id": document.id,
+        "employee_id": document.employee_id,
+        "document_name": document.document_name,
+        "document_type": document.document_type,
+        "file_path": document.file_path
+    }
