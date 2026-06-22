@@ -118,9 +118,6 @@ CREATE TABLE public.employees (
     updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
 );
 
-
-ALTER TABLE public.employees OWNER TO postgres;
-
 --
 -- Name: employees_employee_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
@@ -274,9 +271,87 @@ ALTER SEQUENCE public.roles_id_seq OWNER TO postgres;
 ALTER SEQUENCE public.roles_id_seq OWNED BY public.roles.id;
 
 
+CREATE TABLE public.employee_documents (
+id integer NOT NULL,
+employee_id integer NOT NULL,
+document_name character varying(255) NOT NULL,
+document_type character varying(100) NOT NULL,
+file_path text NOT NULL,
+uploaded_by integer,
+uploaded_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+ALTER TABLE public.employee_documents OWNER TO postgres;
+
+--
+-- Name: employee_documents_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-----------------------------------------------------------------------------------
+
+CREATE SEQUENCE public.employee_documents_id_seq
+AS integer
+START WITH 1
+INCREMENT BY 1
+NO MINVALUE
+NO MAXVALUE
+CACHE 1;
+
+ALTER SEQUENCE public.employee_documents_id_seq OWNER TO postgres;
+
+--
+-- Name: employee_documents_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--------------------------------------------------------------------------------------------
+
+ALTER SEQUENCE public.employee_documents_id_seq
+OWNED BY public.employee_documents.id;
+
+--
+-- Name: employee_documents id; Type: DEFAULT; Schema: public; Owner: postgres
+------------------------------------------------------------------------------
+
+ALTER TABLE ONLY public.employee_documents
+ALTER COLUMN id
+SET DEFAULT nextval('public.employee_documents_id_seq'::regclass);
+
+--
+-- Name: employee_documents employee_documents_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+------------------------------------------------------------------------------------------------------
+
+ALTER TABLE ONLY public.employee_documents
+ADD CONSTRAINT employee_documents_pkey
+PRIMARY KEY (id);
+
+--
+-- Name: employee_documents fk_employee_documents_employee; Type: FK CONSTRAINT
+-------------------------------------------------------------------------------
+
+ALTER TABLE ONLY public.employee_documents
+ADD CONSTRAINT fk_employee_documents_employee
+FOREIGN KEY (employee_id)
+REFERENCES public.employees(employee_id)
+ON DELETE CASCADE;
+--
+-- Name: idx_employee_documents_employee
+----------------------------------------
+
+CREATE INDEX idx_employee_documents_employee
+ON public.employee_documents(employee_id);
+
+--
+-- Name: idx_employee_documents_type
+------------------------------------
+
+CREATE INDEX idx_employee_documents_type
+ON public.employee_documents(document_type);
+
+
+
+ALTER TABLE public.employees OWNER TO postgres;
+
 --
 -- Name: user_roles; Type: TABLE; Schema: public; Owner: postgres
 --
+
 
 CREATE TABLE public.user_roles (
     id integer NOT NULL,
@@ -533,7 +608,10 @@ ALTER TABLE ONLY public.users
 ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_username_key UNIQUE (username);
 
-
+ALTER TABLE ONLY public.employee_documents
+ADD CONSTRAINT fk_employee_documents_uploaded_by
+FOREIGN KEY (uploaded_by)
+REFERENCES public.users(id);
 --
 -- Name: audit_logs fk_audit_user; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
@@ -589,7 +667,82 @@ ALTER TABLE ONLY public.user_roles
 ALTER TABLE ONLY public.user_roles
     ADD CONSTRAINT fk_userrole_user FOREIGN KEY (user_id) REFERENCES public.users(id);
 
+-- ==========================================
+-- PHASE 21 UPDATES
+-- ==========================================
 
+-- ==========================================
+-- EMPLOYEE REPORTING MANAGER
+-- ==========================================
+
+ALTER TABLE employees
+ADD COLUMN IF NOT EXISTS manager_id INTEGER;
+
+ALTER TABLE employees
+ADD CONSTRAINT fk_employee_manager
+FOREIGN KEY (manager_id)
+REFERENCES employees(employee_id);
+-- ==========================================
+-- REFRESH TOKENS
+-- ==========================================
+
+CREATE TABLE IF NOT EXISTS refresh_tokens (
+
+    id SERIAL PRIMARY KEY,
+
+    user_id INTEGER NOT NULL,
+
+    refresh_token TEXT NOT NULL,
+
+    expires_at TIMESTAMP NOT NULL,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_refresh_user
+        FOREIGN KEY (user_id)
+        REFERENCES users(id)
+);
+
+
+-- ==========================================
+-- EXPORT JOBS
+-- ==========================================
+
+CREATE TABLE IF NOT EXISTS export_jobs (
+
+    id SERIAL PRIMARY KEY,
+
+    job_type VARCHAR(100) NOT NULL,
+
+    status VARCHAR(50) DEFAULT 'PENDING',
+
+    file_name TEXT,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+-- ==========================================
+-- ENTERPRISE INDEXES
+-- ==========================================
+
+CREATE INDEX IF NOT EXISTS idx_employee_status
+ON employees(status);
+
+CREATE INDEX IF NOT EXISTS idx_employee_department
+ON employees(department_id);
+
+CREATE INDEX IF NOT EXISTS idx_employee_created
+ON employees(created_at);
+
+CREATE INDEX IF NOT EXISTS idx_employee_updated
+ON employees(updated_at);
+
+CREATE INDEX IF NOT EXISTS idx_audit_timestamp
+ON audit_logs(timestamp);
+
+CREATE INDEX IF NOT EXISTS idx_export_status
+ON export_jobs(status);
 --
 -- PostgreSQL database dump complete
 --
