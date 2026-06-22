@@ -12,6 +12,7 @@ from app.employees.schemas import (
     EmployeeCreate,
     EmployeeUpdate
 )
+from fastapi.responses import FileResponse
 
 from app.audit.utils import create_audit_log
 
@@ -467,3 +468,84 @@ def upload_document(
         "document_type": document.document_type,
         "file_path": document.file_path
     }
+
+from app.employees.document_search_schemas import (
+    DocumentSearchRequest
+)
+@router.post("/documents/search")
+def search_documents(
+    request: DocumentSearchRequest,
+    db: Session = Depends(get_db),
+    current_user=Depends(
+        require_permission("update_employee")
+    )
+):
+
+    query = db.query(EmployeeDocument)
+
+    if request.employee_id:
+        query = query.filter(
+            EmployeeDocument.employee_id ==
+            request.employee_id
+        )
+
+    if request.document_type:
+        query = query.filter(
+            EmployeeDocument.document_type ==
+            request.document_type
+        )
+
+    total_count = query.count()
+
+    offset = (
+        request.page - 1
+    ) * request.page_size
+
+    documents = (
+        query
+        .offset(offset)
+        .limit(request.page_size)
+        .all()
+    )
+
+    return {
+        "count": total_count,
+        "page": request.page,
+        "page_size": request.page_size,
+        "records": documents
+    }
+
+@router.get("/documents/{document_id}/download")
+def download_document(
+    document_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(
+        require_permission("update_employee")
+    )
+):
+
+    document = db.query(
+        EmployeeDocument
+    ).filter(
+        EmployeeDocument.id == document_id
+    ).first()
+
+    if not document:
+        raise HTTPException(
+            status_code=404,
+            detail="Document not found"
+        )
+
+    if not os.path.exists(
+        document.file_path
+    ):
+        raise HTTPException(
+            status_code=404,
+            detail="File missing from storage"
+        )
+
+    return FileResponse(
+        path=document.file_path,
+        filename=document.document_name,
+        media_type="application/octet-stream"
+    )
