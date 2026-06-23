@@ -12,7 +12,6 @@ from app.leave.schemas import (
 )
 
 router = APIRouter(
-    prefix="/leave",
     tags=["Leave Management"]
 )
 

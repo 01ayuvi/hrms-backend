@@ -38,7 +38,7 @@ from app.performance.router import (
     router as performance_router
 )
 from app.recruitment.router import router as recruitment_router
-Base.metadata.create_all(bind=engine)
+#Base.metadata.create_all(bind=engine)
 
 from app.attendance.router import router as attendance_router
 
@@ -51,6 +51,20 @@ from app.payroll.router import router as payroll_router
 from app.payroll.salary_structure_router import (
     router as salary_structure_router
 )
+from app.attendance.models import Attendance
+
+from app.leave.models import LeaveRequest
+from app.leave.leave_balance_model import LeaveBalance
+
+from app.payroll.models import (
+    PayrollRun,
+    PayrollDetail
+)
+
+from app.payroll.salary_structure_model import (
+    SalaryStructure
+)
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="HRMS Backend"

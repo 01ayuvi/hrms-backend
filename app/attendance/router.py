@@ -12,7 +12,6 @@ from app.attendance.schemas import (
 )
 
 router = APIRouter(
-    prefix="/attendance",
     tags=["Attendance"]
 )
 

@@ -10,7 +10,6 @@ from app.leave.leave_balance_schema import (
 )
 
 router = APIRouter(
-    prefix="/leave-balance",
     tags=["Leave Balance"]
 )
 

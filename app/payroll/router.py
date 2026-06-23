@@ -15,7 +15,6 @@ from app.payroll.schemas import (
 )
 
 router = APIRouter(
-    prefix="/payroll",
     tags=["Payroll"]
 )
 

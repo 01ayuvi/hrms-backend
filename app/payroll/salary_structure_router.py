@@ -10,7 +10,6 @@ from app.payroll.salary_structure_schema import (
 )
 
 router = APIRouter(
-    prefix="/salary-structure",
     tags=["Salary Structure"]
 )
 
