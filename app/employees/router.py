@@ -345,7 +345,10 @@ def update_employee(
         entity_id=employee.employee_id
     )
 
-    return employee
+    return {
+    "message": "Employee created successfully",
+    "employee_id": employee.employee_id
+}
 
 
 @router.patch("/{employee_id}/deactivate")
