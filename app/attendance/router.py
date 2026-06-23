@@ -3,7 +3,7 @@ from datetime import datetime, date
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.database.database import get_db
+from app.database.dependencies import get_db
 from app.attendance.models import Attendance
 from app.attendance.schemas import (
     AttendanceCheckIn,

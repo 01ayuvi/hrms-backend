@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app.database.database import get_db
+from app.database.dependencies import get_db
 
 from app.leave.leave_balance_model import LeaveBalance
 from app.leave.leave_balance_schema import (

@@ -5,7 +5,7 @@ from fastapi.responses import FileResponse
 
 from app.payroll.payslip_generator import generate_payslip
 from app.leave.models import LeaveRequest
-from app.database.database import get_db
+from app.database.dependencies import get_db
 from app.payroll.models import PayrollRun, PayrollDetail
 from app.payroll.schemas import (
     PayrollRunCreate,

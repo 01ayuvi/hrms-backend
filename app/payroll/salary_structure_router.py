@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app.database.database import get_db
+from app.database.dependencies import get_db
 
 from app.payroll.salary_structure_model import SalaryStructure
 from app.payroll.salary_structure_schema import (

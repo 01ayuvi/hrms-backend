@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from datetime import timedelta
 
 from app.leave.leave_balance_model import LeaveBalance
-from app.database.database import get_db
+from app.database.dependencies import get_db
 from app.leave.models import LeaveRequest
 from app.leave.schemas import (
     LeaveApply,
