@@ -1,5 +1,7 @@
 from pydantic import BaseModel
 from datetime import time
+from datetime import date
+establishment_date: date 
 
 class OrganizationPolicyUpdate(
     BaseModel
@@ -29,6 +31,12 @@ class OrganizationUpdate(
 ):
     name: str
 
+    organization_type: str 
+    
+    establishment_date: date 
+    
+    status: str = "ACTIVE"
+
     company_code: str
 
     gst_number: str
@@ -36,10 +44,14 @@ class OrganizationUpdate(
     cin_number: str
 
     pan_number: str
+    
+    hr_contact_email: str 
 
     industry: str
 
     website: str
+
+    logo_path: str | None = None
 
     email: str
 

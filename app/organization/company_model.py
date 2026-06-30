@@ -2,6 +2,7 @@ from sqlalchemy import Column
 from sqlalchemy import Integer
 from sqlalchemy import String
 from sqlalchemy import Text
+from sqlalchemy import Date
 
 from app.database.database import Base
 
@@ -17,6 +18,12 @@ class Organization(Base):
 
     name = Column(String)
 
+    organization_type = Column(String)
+    
+    establishment_date = Column(Date)
+    
+    status = Column(String, default="ACTIVE")
+
     company_code = Column(String)
 
     gst_number = Column(String)
@@ -24,10 +31,14 @@ class Organization(Base):
     cin_number = Column(String)
 
     pan_number = Column(String)
+    
+    hr_contact_email = Column(String)
 
     industry = Column(String)
 
     website = Column(String)
+
+    logo_path = Column(String)
 
     email = Column(String)
 

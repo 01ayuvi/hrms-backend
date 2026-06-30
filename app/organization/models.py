@@ -9,6 +9,8 @@ from sqlalchemy.sql import func
 
 from app.database.database import Base
 
+organization_type = Column(String)
+
 
 class OrganizationPolicy(Base):
     __tablename__ = "organization_policies"
