@@ -67,7 +67,6 @@ def create_reset_token(data: dict):
 from jose import jwt, JWTError
 
 def verify_token(token: str):
-
     try:
         payload = jwt.decode(
             token,
@@ -76,7 +75,6 @@ def verify_token(token: str):
         )
 
         username = payload.get("sub")
-
         return username
 
     except JWTError:

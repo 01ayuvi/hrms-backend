@@ -1,12 +1,18 @@
 from fastapi import APIRouter, Depends, HTTPException
+print("******** EMPLOYEE ROUTER LOADED ********")
 from sqlalchemy.orm import Session
 import os
 import shutil
 
 from app.database.dependencies import get_db
 from app.auth.permissions import require_permission
+from app.auth.dependencies import get_current_user
 from sqlalchemy import asc, desc
 
+from app.roles.models import Role
+from app.user_roles.models import UserRole
+
+from app.auth.models import User
 from app.employees.models import Employee
 from app.employees.schemas import (
     EmployeeCreate,
@@ -28,7 +34,6 @@ from app.employees.search_schemas import (
     EmployeeSearchRequest,
     EmployeeSearchResponse
 )
-from fastapi.responses import FileResponse
 from openpyxl import Workbook
 
 from app.employees.export_schemas import (
@@ -41,7 +46,7 @@ from fastapi import UploadFile
 from fastapi import File
 from fastapi import Form
 from app.models.employee_document import EmployeeDocument
-from app.models.employee_document import EmployeeDocument
+
 
 def generate_employee_excel(
     employees,
@@ -222,9 +227,7 @@ def search_employees(
         "records": employees
     }
 
-    return {
-        "message": "search endpoint working"
-    }
+    
 @router.post("/export")
 def export_employees(
     request: EmployeeExportRequest,
@@ -311,9 +314,7 @@ def update_employee(
     employee_id: int,
     request: EmployeeUpdate,
     db: Session = Depends(get_db),
-    current_user=Depends(
-        require_permission("update_employee")
-    )
+    current_user = Depends(get_current_user)
 ):
 
     employee = db.query(Employee).filter(
@@ -425,10 +426,39 @@ def upload_document(
     document_type: str = Form(...),
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
-    current_user=Depends(
-    require_permission("update_employee")
-)
+    current_user=Depends(get_current_user)
 ):
+    user_role = (
+        db.query(Role)
+        .join(UserRole, Role.id == UserRole.role_id)
+        .filter(UserRole.user_id == current_user.id)
+        .first()
+            
+    )
+
+        
+    print("UPLOAD ENDPOINT REACHED")
+    print("Current User:", current_user.username)
+    print("Current User Employee ID:", current_user.employee_id)
+    print("URL Employee ID:", employee_id)
+    print("Role:", user_role.role_name if user_role else None)
+    # HR/Admin can upload for anyone
+    if user_role and user_role.role_name in [
+        "Admin",
+        "HR_ADMIN",
+        "HR Manager"
+    ]:
+        pass
+
+    # Employee can upload only for themselves
+    elif current_user.employee_id == employee_id:
+        pass
+
+    else:
+        raise HTTPException(
+            status_code=403,
+            detail="Not authorized to upload documents."
+        )
 
     file_name = f"{employee_id}_{file.filename}"
 
@@ -443,9 +473,7 @@ def upload_document(
             buffer
         )
 
-    # -----------------------------
-    # INSERT INTO employee_documents
-    # -----------------------------
+
 
     document = EmployeeDocument(
         employee_id=employee_id,
@@ -461,9 +489,6 @@ def upload_document(
 
     db.refresh(document)
 
-    # -----------------------------
-    # RESPONSE
-    # -----------------------------
 
     return {
         "id": document.id,
@@ -480,9 +505,7 @@ from app.employees.document_search_schemas import (
 def search_documents(
     request: DocumentSearchRequest,
     db: Session = Depends(get_db),
-    current_user=Depends(
-        require_permission("update_employee")
-    )
+    current_user=Depends(get_current_user)
 ):
 
     query = db.query(EmployeeDocument)
@@ -523,9 +546,7 @@ def search_documents(
 def download_document(
     document_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(
-        require_permission("update_employee")
-    )
+    current_user=Depends(get_current_user)
 ):
 
     document = db.query(
@@ -558,9 +579,7 @@ def download_document(
 def delete_document(
     document_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(
-        require_permission("update_employee")
-    )
+    current_user=Depends(get_current_user)
 ):
 
     document = db.query(
@@ -602,6 +621,31 @@ def delete_document(
     return {
         "message": "Document deleted successfully"
     }
+@router.get("/available")
+def get_available_employees(
+    db: Session = Depends(get_db)
+):
+
+    employees = (
+        db.query(Employee)
+        .outerjoin(
+            User,
+            Employee.employee_id == User.employee_id
+        )
+        .filter(User.id == None)
+        .all()
+    )
+
+    return [
+        {
+            "employee_id": employee.employee_id,
+            "name": f"{employee.first_name} {employee.last_name}",
+            "email": employee.email
+        }
+        for employee in employees
+    ]
+
+
 @router.get("/{employee_id}/profile")
 def employee_profile(
     employee_id: int,

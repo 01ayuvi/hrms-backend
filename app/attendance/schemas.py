@@ -4,11 +4,11 @@ from decimal import Decimal
 
 
 class AttendanceCheckIn(BaseModel):
-    employee_id: int
+    pass
 
 
 class AttendanceCheckOut(BaseModel):
-    employee_id: int
+    pass
 
 
 class AttendanceResponse(BaseModel):

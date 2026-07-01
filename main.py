@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.auth.router import router as auth_router
 from app.database.database import Base, engine
@@ -38,7 +39,6 @@ from app.performance.router import (
     router as performance_router
 )
 from app.recruitment.router import router as recruitment_router
-#Base.metadata.create_all(bind=engine)
 
 from app.attendance.router import router as attendance_router
 
@@ -51,6 +51,7 @@ from app.payroll.router import router as payroll_router
 from app.payroll.salary_structure_router import (
     router as salary_structure_router
 )
+
 from app.attendance.models import Attendance
 
 from app.leave.models import LeaveRequest
@@ -64,16 +65,33 @@ from app.payroll.models import (
 from app.payroll.salary_structure_model import (
     SalaryStructure
 )
+
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="HRMS Backend"
 )
+
+# -----------------------------
+# CORS Configuration
+# -----------------------------
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 @app.get("/")
 def root():
     return {
         "message": "HRMS Backend Running"
     }
+
 app.include_router(
     auth_router,
     prefix="/auth",
@@ -139,11 +157,13 @@ app.include_router(
     prefix="/recruitment",
     tags=["Recruitment"]
 )
+
 app.include_router(
     performance_router,
     prefix="/performance",
     tags=["Performance"]
 )
+
 app.include_router(
     attendance_router,
     prefix="/attendance",

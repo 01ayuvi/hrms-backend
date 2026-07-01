@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String, Date, DateTime
 from sqlalchemy.sql import func
+from sqlalchemy.orm import relationship
 
 from app.database.database import Base
 
@@ -70,4 +71,9 @@ class Employee(Base):
         DateTime,
         server_default=func.now(),
         onupdate=func.now()
+    )
+    user = relationship(
+        "User",
+        back_populates="employee",
+        uselist=False
     )

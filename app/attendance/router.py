@@ -3,6 +3,7 @@ from datetime import datetime, date
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app.auth.dependencies import get_current_user
 from app.database.dependencies import get_db
 from app.attendance.models import Attendance
 from app.attendance.schemas import (
@@ -19,12 +20,13 @@ router = APIRouter(
 @router.post("/checkin", response_model=AttendanceResponse)
 def check_in(
     attendance_data: AttendanceCheckIn,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
 ):
     today = date.today()
 
     existing = db.query(Attendance).filter(
-        Attendance.employee_id == attendance_data.employee_id,
+        Attendance.employee_id == current_user.employee_id,
         Attendance.attendance_date == today
     ).first()
 
@@ -35,7 +37,7 @@ def check_in(
         )
 
     attendance = Attendance(
-        employee_id=attendance_data.employee_id,
+        employee_id=current_user.employee_id,
         attendance_date=today,
         check_in_time=datetime.now(),
         attendance_status="PRESENT"
@@ -51,12 +53,13 @@ def check_in(
 @router.post("/checkout", response_model=AttendanceResponse)
 def check_out(
     attendance_data: AttendanceCheckOut,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
 ):
     today = date.today()
 
     attendance = db.query(Attendance).filter(
-        Attendance.employee_id == attendance_data.employee_id,
+        Attendance.employee_id == current_user.employee_id,
         Attendance.attendance_date == today
     ).first()
 
@@ -84,6 +87,14 @@ def check_out(
 
 @router.get("/", response_model=list[AttendanceResponse])
 def get_attendance(
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
 ):
-    return db.query(Attendance).all()
+    return (
+        db.query(Attendance)
+        .filter(
+            Attendance.employee_id ==
+            current_user.employee_id
+        )
+        .all()
+    )

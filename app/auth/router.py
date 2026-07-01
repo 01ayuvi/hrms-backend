@@ -2,6 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm
 
+from app.employees.models import Employee
+from app.roles.models import Role
+from app.user_roles.models import UserRole
+
 from app.auth.schemas import RegisterRequest
 from app.auth.models import User
 from app.auth.security import hash_password, verify_password
@@ -55,7 +59,9 @@ def register(
         request.password
     )
 
+    # Create the user
     new_user = User(
+        employee_id=request.employee_id,
         username=request.username,
         email=request.email,
         password_hash=hashed_password,
@@ -66,9 +72,30 @@ def register(
     db.commit()
     db.refresh(new_user)
 
+    # Find the selected role
+    role = db.query(Role).filter(
+        Role.role_name == request.role
+    ).first()
+
+    if not role:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid role selected"
+        )
+
+    # Assign role to user
+    user_role = UserRole(
+        user_id=new_user.id,
+        role_id=role.id
+    )
+
+    db.add(user_role)
+    db.commit()
+
     return {
         "message": "User registered successfully",
-        "user_id": new_user.id
+        "user_id": new_user.id,
+        "role": role.role_name
     }
 
 
@@ -214,16 +241,44 @@ def reset_password(
 
 @router.get("/me")
 def get_me(
-    current_user=Depends(get_current_user)
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
+
+    employee = db.query(Employee).filter(
+        Employee.employee_id == current_user.employee_id
+    ).first()
+
+    user_role = db.query(UserRole).filter(
+        UserRole.user_id == current_user.id
+    ).first()
+
+    role_name = None
+
+    if user_role:
+        role = db.query(Role).filter(
+            Role.id == user_role.role_id
+        ).first()
+
+        if role:
+            role_name = role.role_name
 
     return {
         "id": current_user.id,
         "username": current_user.username,
         "email": current_user.email,
-        "is_active": current_user.is_active
-    }
+        "is_active": current_user.is_active,
 
+        "employee_id": current_user.employee_id,
+
+        "first_name": employee.first_name if employee else None,
+        "last_name": employee.last_name if employee else None,
+        "designation": employee.designation if employee else None,
+        "department_id": employee.department_id if employee else None,
+        "organization_id": employee.organization_id if employee else None,
+
+        "role": role_name
+    }
 
 @router.get("/whoami")
 def who_am_i(
