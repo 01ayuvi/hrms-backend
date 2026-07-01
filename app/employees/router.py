@@ -346,11 +346,9 @@ def update_employee(
     )
 
     return {
-    "message": "Employee created successfully",
+    "message": "Employee updated successfully",
     "employee_id": employee.employee_id
 }
-
-
 @router.patch("/{employee_id}/deactivate")
 def deactivate_employee(
     employee_id: int,
