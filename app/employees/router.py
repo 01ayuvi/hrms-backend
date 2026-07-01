@@ -623,6 +623,7 @@ def delete_document(
 def get_available_employees(
     db: Session = Depends(get_db)
 ):
+    
 
     employees = (
         db.query(Employee)
@@ -642,6 +643,22 @@ def get_available_employees(
         }
         for employee in employees
     ]
+
+@router.get("/managers")
+def get_managers(
+    db: Session = Depends(get_db)
+):
+
+    managers = db.query(Employee).all()
+
+    return [
+        {
+            "employee_id": manager.employee_id,
+            "name": f"{manager.first_name} {manager.last_name}",
+            "email": manager.email
+        }
+        for manager in managers
+    ]    
 
 
 @router.get("/{employee_id}/profile")
@@ -680,8 +697,11 @@ def employee_profile(
             "first_name": employee.first_name,
             "last_name": employee.last_name,
             "email": employee.email,
+            "phone": employee.phone,
             "designation": employee.designation,
-            "status": employee.status
+            "status": employee.status,
+            "manager_id": employee.manager_id
+
         },
 
         "manager": (
