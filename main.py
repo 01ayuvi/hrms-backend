@@ -67,10 +67,23 @@ from app.payroll.salary_structure_model import (
 )
 
 Base.metadata.create_all(bind=engine)
-
+from app.organization.router import router as organization_router
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 app = FastAPI(
     title="HRMS Backend"
 )
+app = FastAPI(
+    title="HRMS Backend"
+)
+
+app.mount(
+    "/uploads",
+    StaticFiles(directory="uploads"),
+    name="uploads"
+)
+
+app.include_router(organization_router)
 
 # -----------------------------
 # CORS Configuration
