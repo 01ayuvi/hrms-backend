@@ -8,6 +8,18 @@ class JobOpeningCreate(BaseModel):
     description: Optional[str] = None
     openings_count: int = 1
 
+class JobOpeningUpdate(BaseModel):
+
+    title: str
+
+    department_id: int
+
+    description: str
+
+    openings_count: int
+
+    status: str    
+
 class JobOpeningResponse(BaseModel):
     job_id: int
     title: str
