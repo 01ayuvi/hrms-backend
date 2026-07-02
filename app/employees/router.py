@@ -149,6 +149,18 @@ def get_employees(
     )
 
     return employees
+
+@router.get("/all")
+def get_all_employees(
+    db: Session = Depends(get_db)
+):
+
+    return (
+        db.query(Employee)
+        .order_by(Employee.first_name)
+        .all()
+    )
+
 @router.post("/search")
 def search_employees(
     request: EmployeeSearchRequest,

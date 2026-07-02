@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from datetime import timedelta
-
+from app.employees.models import Employee
 from app.leave.leave_balance_model import LeaveBalance
 from app.database.dependencies import get_db
 from app.leave.models import LeaveRequest
@@ -112,8 +112,32 @@ def reject_leave(
     return leave_request
 
 
-@router.get("/", response_model=list[LeaveResponse])
+@router.get("/")
 def get_leave_requests(
     db: Session = Depends(get_db)
 ):
-    return db.query(LeaveRequest).all()
+
+    leaves = (
+        db.query(LeaveRequest, Employee)
+        .join(
+            Employee,
+            LeaveRequest.employee_id == Employee.employee_id
+        )
+        .all()
+    )
+
+    return [
+        {
+            "leave_id": leave.leave_id,
+            "employee_id": employee.employee_id,
+            "employee_name": f"{employee.first_name} {employee.last_name}",
+            "leave_type": leave.leave_type,
+            "start_date": leave.start_date,
+            "end_date": leave.end_date,
+            "reason": leave.reason,
+            "status": leave.status,
+            "approved_by": leave.approved_by,
+            "lwp_days": leave.lwp_days,
+        }
+        for leave, employee in leaves
+    ]
