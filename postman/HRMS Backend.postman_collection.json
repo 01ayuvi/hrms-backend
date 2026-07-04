@@ -255,7 +255,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n  \"organization_id\": 1,\r\n  \"department_id\": 1,\r\n  \"manager_id\": 2,\r\n  \"first_name\": \"Rohan\",\r\n  \"last_name\": \"Verma\",\r\n  \"email\": \"rohan.verma.demo1@company.com\",\r\n  \"phone\": \"9876543210\",\r\n  \"designation\": \"Backend Developer\",\r\n  \"joining_date\": \"2026-06-23\",\r\n  \"status\": \"ACTIVE\"\r\n}",
+              "raw": "{\r\n  \"organization_id\": 1,\r\n  \"department_id\": 1,\r\n  \"manager_id\": 2,\r\n  \"first_name\": \"Test\",\r\n  \"last_name\": \"User\",\r\n  \"email\": \"test.user@company.com\",\r\n  \"phone\": \"9999999999\",\r\n  \"designation\": \"Software Engineer\",\r\n  \"joining_date\": \"2026-06-24\",\r\n  \"status\": \"ACTIVE\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -263,7 +263,7 @@
               }
             },
             "url": {
-              "raw": "http://127.0.0.1:8000/employees/2",
+              "raw": "http://127.0.0.1:8000/employees",
               "protocol": "http",
               "host": [
                 "127",
@@ -273,8 +273,7 @@
               ],
               "port": "8000",
               "path": [
-                "employees",
-                "2"
+                "employees"
               ]
             }
           },
@@ -360,7 +359,91 @@
     },
     {
       "name": "Departments",
-      "item": []
+      "item": [
+        {
+          "name": "Get departments",
+          "request": {
+            "method": "GET",
+            "header": []
+          },
+          "response": []
+        },
+        {
+          "name": "Create Department",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://127.0.0.1:8000/departments/",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "departments",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update department",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"organization_id\": 1,\r\n    \"department_name\": \"Engineering Updated\",\r\n    \"department_code\": \"ENGU\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://127.0.0.1:8000/departments/1",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "departments",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
     },
     {
       "name": "Dashboard",
@@ -565,6 +648,14 @@
                 "status"
               ]
             }
+          },
+          "response": []
+        },
+        {
+          "name": "Candidates",
+          "request": {
+            "method": "GET",
+            "header": []
           },
           "response": []
         }
@@ -826,7 +917,7 @@
           "response": []
         },
         {
-          "name": "New Request",
+          "name": "Reject leave request",
           "request": {
             "auth": {
               "type": "bearer",
@@ -1095,6 +1186,317 @@
           "request": {
             "method": "GET",
             "header": []
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "organization",
+      "item": [
+        {
+          "name": "get organization policies",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://127.0.0.1:8000/organization/policies",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "organization",
+                "policies"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Orgnization Policies",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"working_days\": \"MONDAY-FRIDAY\",\r\n  \"office_start_time\": \"09:00:00\",\r\n  \"office_end_time\": \"18:00:00\",\r\n  \"late_mark_after\": \"09:15:00\",\r\n  \"half_day_after\": \"11:00:00\",\r\n  \"annual_leave_limit\": 24,\r\n  \"casual_leave_limit\": 12,\r\n  \"sick_leave_limit\": 12,\r\n  \"probation_months\": 6,\r\n  \"notice_period_days\": 90\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://127.0.0.1:8000/organization/policies",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "organization",
+                "policies"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "View company details",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://127.0.0.1:8000/organization",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "organization"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "update company details",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"name\": \"ABC Technologies Pvt Ltd\",\r\n  \"company_code\": \"ABC001\",\r\n  \"gst_number\": \"29ABCDE1234F1Z5\",\r\n  \"cin_number\": \"U72900KA2024PTC123456\",\r\n  \"pan_number\": \"ABCDE1234F\",\r\n  \"industry\": \"IT Services\",\r\n  \"website\": \"https://abctech.com\",\r\n  \"email\": \"hr@abctech.com\",\r\n  \"phone\": \"9876543210\",\r\n  \"address\": \"Electronic City\",\r\n  \"city\": \"Bangalore\",\r\n  \"state\": \"Karnataka\",\r\n  \"country\": \"India\",\r\n  \"postal_code\": \"560100\",\r\n  \"timezone\": \"Asia/Kolkata\",\r\n  \"employee_strength\": 500\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://127.0.0.1:8000/organization",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "organization"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "select type of organization",
+          "request": {
+            "auth": {
+              "type": "jwt",
+              "jwt": [
+                {
+                  "key": "algorithm",
+                  "value": "HS256",
+                  "type": "string"
+                },
+                {
+                  "key": "isSecretBase64Encoded",
+                  "value": false,
+                  "type": "boolean"
+                },
+                {
+                  "key": "payload",
+                  "value": "{}",
+                  "type": "string"
+                },
+                {
+                  "key": "addTokenTo",
+                  "value": "header",
+                  "type": "string"
+                },
+                {
+                  "key": "headerPrefix",
+                  "value": "Bearer",
+                  "type": "string"
+                },
+                {
+                  "key": "queryParamKey",
+                  "value": "token",
+                  "type": "string"
+                },
+                {
+                  "key": "header",
+                  "value": "{}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"name\": \"ABC Technologies Pvt Ltd\",\r\n  \"organization_type\": \"Private Limited Company\",\r\n  \"company_code\": \"ABC001\",\r\n  \"gst_number\": \"29ABCDE1234F1Z5\",\r\n  \"cin_number\": \"U72900KA2024PTC123456\",\r\n  \"pan_number\": \"ABCDE1234F\",\r\n  \"industry\": \"IT Services\",\r\n  \"website\": \"https://abctech.com\",\r\n  \"email\": \"hr@abctech.com\",\r\n  \"phone\": \"9876543210\",\r\n  \"address\": \"Electronic City\",\r\n  \"city\": \"Bangalore\",\r\n  \"state\": \"Karnataka\",\r\n  \"country\": \"India\",\r\n  \"postal_code\": \"560100\",\r\n  \"timezone\": \"Asia/Kolkata\",\r\n  \"employee_strength\": 500\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://127.0.0.1:8000/organization",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "organization"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "upload-logo",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "",
+                  "type": "file",
+                  "uuid": "dbc3a64f-e014-490c-9dd5-3a77589069c6",
+                  "src": "/C:/Users/ayuvi/Downloads/company_logo.jpg"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://127.0.0.1:8000/organization",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "organization"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "organizationPolicy",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"working_days\": \"MONDAY-FRIDAY\",\r\n    \"office_start_time\": \"09:00:00\",\r\n    \"office_end_time\": \"18:00:00\",\r\n    \"late_mark_after\": \"09:15:00\",\r\n    \"half_day_after\": \"11:00:00\",\r\n    \"annual_leave_limit\": 30,\r\n    \"casual_leave_limit\": 12,\r\n    \"sick_leave_limit\": 12,\r\n    \"probation_months\": 6,\r\n    \"notice_period_days\": 90\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://127.0.0.1:8000/organization/policies",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "organization",
+                "policies"
+              ]
+            }
           },
           "response": []
         }
