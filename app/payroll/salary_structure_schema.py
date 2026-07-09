@@ -12,6 +12,13 @@ class SalaryStructureCreate(BaseModel):
     professional_tax: Decimal = 200
     tds: Decimal = 0
 
+class SalaryStructureUpdate(BaseModel):
+    basic_salary: Decimal
+    hra_percentage: Decimal
+    pf_percentage: Decimal
+    esic_percentage: Decimal
+    professional_tax: Decimal
+    tds: Decimal
 
 class SalaryStructureResponse(BaseModel):
     salary_structure_id: int
@@ -27,5 +34,5 @@ class SalaryStructureResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
+class Config:
         from_attributes = True

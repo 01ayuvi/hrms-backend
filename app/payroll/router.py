@@ -3,6 +3,16 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from fastapi.responses import FileResponse
 
+from app.payroll.salary_structure_model import SalaryStructure
+
+from app.payroll.salary_structure_schema import (
+    SalaryStructureCreate,
+    SalaryStructureUpdate,
+    SalaryStructureResponse
+)
+
+from app.employees.models import Employee
+
 from app.payroll.payslip_generator import generate_payslip
 from app.leave.models import LeaveRequest
 from app.database.dependencies import get_db
@@ -179,3 +189,125 @@ def download_payslip(
         media_type="application/pdf",
         filename=filename
     )
+
+
+
+@router.post(
+    "/salary-structure",
+    response_model=SalaryStructureResponse
+)
+def create_salary_structure(
+    request: SalaryStructureCreate,
+    db: Session = Depends(get_db)
+):
+
+    employee = db.query(Employee).filter(
+        Employee.employee_id == request.employee_id
+    ).first()
+
+    if not employee:
+        raise HTTPException(
+            status_code=404,
+            detail="Employee not found"
+        )
+
+    existing = db.query(SalaryStructure).filter(
+        SalaryStructure.employee_id == request.employee_id
+    ).first()
+
+    if existing:
+        raise HTTPException(
+            status_code=400,
+            detail="Salary structure already exists"
+        )
+
+    salary = SalaryStructure(
+        employee_id=request.employee_id,
+        basic_salary=request.basic_salary,
+        hra_percentage=request.hra_percentage,
+        pf_percentage=request.pf_percentage,
+        esic_percentage=request.esic_percentage,
+        professional_tax=request.professional_tax,
+        tds=request.tds
+    )
+
+    db.add(salary)
+    db.commit()
+    db.refresh(salary)
+
+    return salary
+
+
+@router.get(
+    "/salary-structure",
+    response_model=list[SalaryStructureResponse]
+)
+def get_salary_structures(
+    db: Session = Depends(get_db)
+):
+
+    salary_structures = (
+        db.query(SalaryStructure)
+        .all()
+    )
+
+    return salary_structures
+
+@router.put(
+    "/salary-structure/{employee_id}",
+    response_model=SalaryStructureResponse
+)
+def update_salary_structure(
+    employee_id: int,
+    request: SalaryStructureUpdate,
+    db: Session = Depends(get_db)
+):
+
+    salary_structure = db.query(
+        SalaryStructure
+    ).filter(
+        SalaryStructure.employee_id == employee_id
+    ).first()
+
+    if not salary_structure:
+        raise HTTPException(
+            status_code=404,
+            detail="Salary structure not found"
+        )
+
+    salary_structure.basic_salary = request.basic_salary
+    salary_structure.hra_percentage = request.hra_percentage
+    salary_structure.pf_percentage = request.pf_percentage
+    salary_structure.esic_percentage = request.esic_percentage
+    salary_structure.professional_tax = request.professional_tax
+    salary_structure.tds = request.tds
+
+    db.commit()
+    db.refresh(salary_structure)
+
+    return salary_structure
+
+@router.delete("/salary-structure/{employee_id}")
+def delete_salary_structure(
+    employee_id: int,
+    db: Session = Depends(get_db)
+):
+
+    salary_structure = db.query(
+        SalaryStructure
+    ).filter(
+        SalaryStructure.employee_id == employee_id
+    ).first()
+
+    if not salary_structure:
+        raise HTTPException(
+            status_code=404,
+            detail="Salary structure not found"
+        )
+
+    db.delete(salary_structure)
+    db.commit()
+
+    return {
+        "message": "Salary structure deleted successfully"
+    }    
