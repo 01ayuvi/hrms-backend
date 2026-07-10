@@ -246,12 +246,57 @@ def get_salary_structures(
     db: Session = Depends(get_db)
 ):
 
-    salary_structures = (
-        db.query(SalaryStructure)
-        .all()
-    )
+    salary_structures = db.query(
+        SalaryStructure
+    ).all()
 
-    return salary_structures
+    result = []
+
+    for salary in salary_structures:
+
+        employee = db.query(Employee).filter(
+            Employee.employee_id == salary.employee_id
+        ).first()
+
+        result.append({
+
+            "salary_structure_id":
+                salary.salary_structure_id,
+
+            "employee_id":
+                salary.employee_id,
+
+            "employee_name":
+                f"{employee.first_name} {employee.last_name}"
+                if employee else None,
+
+            "basic_salary":
+                salary.basic_salary,
+
+            "hra_percentage":
+                salary.hra_percentage,
+
+            "pf_percentage":
+                salary.pf_percentage,
+
+            "esic_percentage":
+                salary.esic_percentage,
+
+            "professional_tax":
+                salary.professional_tax,
+
+            "tds":
+                salary.tds,
+
+            "created_at":
+                salary.created_at,
+
+            "updated_at":
+                salary.updated_at
+
+        })
+
+    return result
 
 @router.put(
     "/salary-structure/{employee_id}",

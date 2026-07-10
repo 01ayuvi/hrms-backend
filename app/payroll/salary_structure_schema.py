@@ -23,6 +23,7 @@ class SalaryStructureUpdate(BaseModel):
 class SalaryStructureResponse(BaseModel):
     salary_structure_id: int
     employee_id: int
+    employee_name: str | None = None
 
     basic_salary: Decimal
     hra_percentage: Decimal
