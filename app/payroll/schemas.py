@@ -34,6 +34,7 @@ class PayrollDetailResponse(BaseModel):
 
     payroll_run_id: int
     employee_id: int
+    employee_name: str | None = None
 
     basic_salary: Decimal
 

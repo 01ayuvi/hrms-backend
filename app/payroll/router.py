@@ -52,15 +52,37 @@ def create_payroll_detail(
     payroll_data: PayrollDetailCreate,
     db: Session = Depends(get_db)
 ):
+    print("========== PAYROLL DEBUG ==========")
+    print("Employee ID received:", payroll_data.employee_id)
 
     salary_structure = db.query(SalaryStructure).filter(
         SalaryStructure.employee_id == payroll_data.employee_id
     ).first()
 
-    if not salary_structure:
+    print("Salary Structure Found:", salary_structure)
+
+    if salary_structure:
+        print("Basic Salary:", salary_structure.basic_salary)
+
+        salary_structure = db.query(SalaryStructure).filter(
+            SalaryStructure.employee_id == payroll_data.employee_id
+        ).first()
+
+        if not salary_structure:
+            raise HTTPException(
+                status_code=404,
+                detail="Salary structure not found"
+            )
+
+    existing_payroll = db.query(PayrollDetail).filter(
+        PayrollDetail.payroll_run_id == payroll_data.payroll_run_id,
+        PayrollDetail.employee_id == payroll_data.employee_id
+    ).first()
+
+    if existing_payroll:
         raise HTTPException(
-            status_code=404,
-            detail="Salary structure not found"
+            status_code=400,
+            detail="Payroll has already been generated for this employee in this payroll run."
         )
 
     basic_salary = float(salary_structure.basic_salary)
@@ -159,7 +181,57 @@ def get_payroll_runs(
 def get_payroll_details(
     db: Session = Depends(get_db)
 ):
-    return db.query(PayrollDetail).all()
+    payroll_details = db.query(PayrollDetail).all()
+
+    result = []
+
+    for payroll in payroll_details:
+
+        employee = db.query(Employee).filter(
+            Employee.employee_id == payroll.employee_id
+        ).first()
+
+        result.append({
+
+            "payroll_detail_id": payroll.payroll_detail_id,
+
+            "payroll_run_id": payroll.payroll_run_id,
+
+            "employee_id": payroll.employee_id,
+
+            "employee_name":
+                f"{employee.first_name} {employee.last_name}"
+                if employee else None,
+
+            "basic_salary": payroll.basic_salary,
+
+            "hra": payroll.hra,
+
+            "gross_salary": payroll.gross_salary,
+
+            "allowances": payroll.allowances,
+
+            "deductions": payroll.deductions,
+
+            "pf_deduction": payroll.pf_deduction,
+
+            "esic_deduction": payroll.esic_deduction,
+
+            "professional_tax": payroll.professional_tax,
+
+            "tds": payroll.tds,
+
+            "lwp_deduction": payroll.lwp_deduction,
+
+            "net_salary": payroll.net_salary,
+
+            "created_at": payroll.created_at,
+
+            "updated_at": payroll.updated_at
+
+        })
+
+    return result
 
 @router.get("/payslip/{payroll_detail_id}")
 def download_payslip(
