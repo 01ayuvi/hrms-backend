@@ -2,7 +2,7 @@ from app.payroll.salary_structure_model import SalaryStructure
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from fastapi.responses import FileResponse
-
+from app.departments.models import Department
 from app.payroll.salary_structure_model import SalaryStructure
 
 from app.payroll.salary_structure_schema import (
@@ -242,6 +242,17 @@ def download_payslip(
     payroll = db.query(PayrollDetail).filter(
         PayrollDetail.payroll_detail_id == payroll_detail_id
     ).first()
+    employee = db.query(Employee).filter(
+        Employee.employee_id == payroll.employee_id
+    ).first()
+
+    department = db.query(Department).filter(
+        Department.id == employee.department_id
+    ).first()
+
+    payroll_run = db.query(PayrollRun).filter(
+        PayrollRun.payroll_run_id == payroll.payroll_run_id
+    ).first()
 
     if not payroll:
         raise HTTPException(
@@ -253,7 +264,10 @@ def download_payslip(
 
     generate_payslip(
         filename,
-        payroll
+        payroll,
+        employee,
+        payroll_run,
+        department
     )
 
     return FileResponse(
